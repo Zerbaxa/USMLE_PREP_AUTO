@@ -1,0 +1,14 @@
+{
+  "_comment": "이 파일을 paths.json 으로 복사하고 자기 경로로 고칠 것. paths.json 은 커밋되지 않는다.",
+
+  "materials": [
+    "~/USMLE_Materials"
+  ],
+
+  "topics": "~/USMLE_Notes/Topics",
+
+  "_anki": "생략하면 Anki2/ 아래에서 가장 큰 컬렉션을 자동으로 찾는다. 프로필이 여러 개면 직접 지정할 것.",
+  "anki": null,
+
+  "tag": "ReviewNeeded"
+}

@@ -13,18 +13,22 @@ xcode-select --install        # Swift (OCR용). 이미 있으면 건너뜀
   Tools → Add-ons → Get Add-ons → `2055492159` → Anki 재시작
 - **Obsidian vault** — 아무 폴더나. 안에 `Topics/` 하위폴더만 있으면 된다
 
-## 2. 경로 4개 수정
+## 2. 경로 설정
 
-`mle.py` 맨 위 상수를 자기 환경에 맞춘다.
+```bash
+cp paths.example.json paths.json
+```
 
-| 줄 | 상수 | 무엇으로 |
-| --- | --- | --- |
-| 20 | `ROOTS` | 자기 자료 폴더 (PDF·스크린샷이 있는 곳). 여러 개 가능 |
-| 25 | `ANKI` | Anki 프로필 경로. `Anki2/<프로필명>/collection.anki2` |
-| 182 | `TOPICS` | 자기 vault의 `Topics/` 경로 |
-| 183 | `TAG` | 그대로 `ReviewNeeded` 둬도 됨 |
+`paths.json`을 자기 환경에 맞게 고친다. 이 파일은 **커밋되지 않는다**.
 
-`~/.claude/skills/usmle/SKILL.md` 안에도 vault 경로와 `mle.py` 경로가 박혀 있으니 같이 바꾼다.
+| 키 | 무엇 |
+| --- | --- |
+| `materials` | 자료 폴더 목록 (PDF·스크린샷이 있는 곳). 여러 개 가능 |
+| `topics` | 노트가 쌓일 폴더. Obsidian vault 안 아무 데나 |
+| `anki` | 생략하면 `Anki2/` 아래에서 **가장 큰 컬렉션을 자동으로 찾는다**. 프로필이 여러 개면 직접 지정 |
+| `tag` | Anki 태그. 그대로 둬도 됨 |
+
+`SKILL.md` 안의 `$M` 한 줄만 `mle.py` 설치 위치로 고치면 된다.
 
 ## 3. 빌드 & 인덱싱
 

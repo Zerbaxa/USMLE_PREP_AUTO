@@ -1,18 +1,18 @@
 ---
 name: usmle
-description: UWorld 문제 해설(스크린샷/텍스트)을 받아 내 자료·Anki·온라인을 전부 검색해서 출처 표기된 주제별 리뷰 노트를 Obsidian에 만든다. "이거 정리해줘", "UWorld 오답", "이 문제 틀렸어", "위키에 넣어줘", "이 주제 정리해줘", 문제 해설 스크린샷을 드래그했을 때 사용.
+description: UWorld 문제 해설(스크린샷/텍스트)을 받아 내 자료와 Anki를 전부 검색해서 출처 표기된 주제별 리뷰 노트를 Obsidian에 만든다. "이거 정리해줘", "UWorld 오답", "이 문제 틀렸어", "위키에 넣어줘", "이 주제 정리해줘", 문제 해설 스크린샷을 드래그했을 때 사용.
 ---
 
 # USMLE 주제 리뷰 노트 (`/usmle`)
 
 UWorld 해설 한 장 → **그 주제에 대한 내 모든 자료를 한 노트로 모은다.**
-해설 내용 + 내 PDF 자료 + Anki 카드 + 온라인 근거, **전부 출처를 달아서** 원문을 되찾을 수 있게.
+해설 내용 + 내 PDF 자료 + Anki 카드, **전부 출처를 달아서** 원문을 되찾을 수 있게.
 
-- vault: `/Users/minkyo/Documents/Sync_Vault/40_Study/CBBSA Study`
+- vault: `paths.json`의 `topics` 상위 폴더 (과목 노트가 있는 곳)
 - 주제 노트: `Topics/<주제명>.md` ← 결과물
 - 과목 노트: `*.md` ← 여기엔 `[[링크]]` 한 줄만 추가
 - 복습 큐: `USMLE_Review.md`
-- 검색 도구: `python3 /Users/minkyo/Claude/MLE_PREP/mle.py`
+- 검색 도구: `mle.py` — 경로는 아래 `$M` 참고. 자료·노트 폴더는 `paths.json`이 정한다
 
 ## 절차
 
@@ -26,15 +26,15 @@ UWorld 해설 한 장 → **그 주제에 대한 내 모든 자료를 한 노트
 
 ### 2. 이미 있는지 확인
 ```
-ls "…/CBBSA Study/Topics/"
+ls "<Topics 폴더>"
 ```
 같은 주제 노트가 있으면 **새로 만들지 말고 그 노트를 보강**한다 (기존 줄은 안 고침, 새 내용만 추가).
 
-### 3. 세 군데 검색 — 셋 다 한다
+### 3. 검색 — 내 자료와 Anki 둘 다
 
 **스크린샷에 `Question Id`가 보이면 그것부터.** 키워드 검색보다 훨씬 정확하다:
 ```bash
-M="python3 /Users/minkyo/Claude/MLE_PREP/mle.py"
+M="python3 ~/MLE_PREP/mle.py"      # 설치 위치에 맞게
 $M qid 161      # 그 문제의 UW PDF 원문 페이지 + 그 문제용으로 만들어진 Anki 카드 직행
 ```
 AnKing 카드에는 `#UWorld::Step::<QID>` 태그가 박혀 있다(Step1 12,086 / Step2 10,957장).
@@ -62,7 +62,6 @@ $M tag "Aortic_Stenosis"              # Anki 태그로 훑기
 - **내 지식으로 채운 줄은 `^[HY]`로 표시**하고 `## 출처`에 `- \`[HY]\` USMLE high-yield 일반지식 (자료 출처 없음)`을 둔다.
   좌표 있는 줄과 섞이지 않게 하는 게 요점이다.
 - **Anki**: `출처태그`에 `#FirstAid::07_Cardiovascular::…` 같은 원본 챕터가 박혀 있다 — 그게 곧 출처다.
-- **온라인**: WebSearch로 보충. **1차 자료 우선** (StatPearls, NIH/NCBI, UpToDate 공개분, 학회 가이드라인, AAFP). 블로그·요약사이트는 쓰지 않는다. 근거로 쓸 페이지는 WebFetch로 실제로 열어보고 인용한다.
 
 검색어는 해설의 핵심 용어로. 한 번에 안 걸리면 동의어·약어로 2~3번 더 (예: `HCM` / `hypertrophic cardiomyopathy`).
 **아무것도 안 나온 소스는 "없었다"고 노트에 적는다.** 조용히 빼지 않는다.
@@ -73,7 +72,7 @@ $M tag "Aortic_Stenosis"              # Anki 태그로 훑기
 ```markdown
 # Aortic stenosis
 
-> 출처: UWorld 오답 2026-07-27 · 자료 3 · Anki 5 · 온라인 2
+> 출처: UWorld 오답 2026-07-27, QID 1234 · 자료 3 · Anki 5
 
 ## 핵심
 - Crescendo-decrescendo systolic murmur, carotid로 방사
@@ -93,20 +92,17 @@ $M tag "Aortic_Stenosis"              # Anki 태그로 훑기
 - `nid:1471558760048` murmur 모양 = crescendo-decrescendo, soft S2 동반
 - 관련 태그: `#AK_Step1_v12::#FirstAid::07_Cardiovascular::…::Aortic_Stenosis`
 
-## 온라인
-- 무증상 severe AS도 EF<50%면 AVR 적응 ^[SP]
-
 ## 출처
 - `[UW]` UWorld 해설 (2026-07-27 오답)
-- `[FA-p.301]` First_Aid_2025.pdf p.301 — `~/Documents/USMLE_Materials/`
+- `[FA-p.301]` FA2026.pdf p.301 (책 p.279) — `materials` 폴더
 - `[AK]` Anki `nid:1471558760048` · AnKing Step Deck
-- `[SP]` StatPearls, Aortic Stenosis — https://www.ncbi.nlm.nih.gov/books/NBK…
+- `[HY]` USMLE high-yield 일반지식 (자료 출처 없음)
 
 ## 관련
 [[Hypertrophic cardiomyopathy]] · [[Cardiology]]
 
 ## Anki로 돌리기
-`nid:1471558760048,1471554803766` — 이 카드들에 `오답` 태그 붙이기
+`nid:1471558760048,1471554803766` — 이 카드들에 `ReviewNeeded` 태그 붙이기
 `"tag:#AK_Step1_v12::#FirstAid::07_Cardiovascular::03_Physiology::10_Heart_Murmurs*"` — 주제 전체
 ```
 
@@ -166,12 +162,10 @@ $M check "…/Topics/<주제>.md"
 
 ## 자료 폴더
 
-인덱싱 대상 (둘 다):
-- `~/Library/CloudStorage/OneDrive-개인/30_Study_Resources/Medical/USMLE` — Pathoma, Boards&Beyond(BNB2024/BNBS2)
-- `~/Documents/USMLE_Materials` — 그때그때 던져넣는 곳
+인덱싱 대상은 `paths.json`의 `materials` 배열에 적힌 폴더들. 여러 개 지정할 수 있다.
 
 ```bash
-python3 /Users/minkyo/Claude/MLE_PREP/mle.py index   # 바뀐 파일만 다시 읽음
+$M index   # 바뀐 파일만 다시 읽음
 ```
 새 자료를 넣었는데 검색에 안 잡히면 이걸 먼저 돌린다.
 

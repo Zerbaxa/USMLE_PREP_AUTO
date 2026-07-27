@@ -11,19 +11,37 @@
 """
 import html
 import pathlib
+import json
 import re
 import shutil
 import sqlite3
 import subprocess
 import sys
 
-ROOTS = [
-    pathlib.Path.home() / "Library/CloudStorage/OneDrive-개인/30_Study_Resources/Medical/USMLE",
-    pathlib.Path.home() / "Documents/USMLE_Materials",  # 그때그때 던져넣는 곳
-]
-INDEX = pathlib.Path(__file__).parent / "materials.db"
-ANKI = pathlib.Path.home() / "Library/Application Support/Anki2/Minkyo/collection.anki2"
-SNAP = pathlib.Path(__file__).parent / "anki_snapshot.anki2"  # Anki 켜져 있을 때 읽을 사본
+HERE = pathlib.Path(__file__).parent
+
+
+def _conf():
+    """경로 설정. `paths.json`이 있으면 그걸 쓰고, 없으면 기본값.
+    개인 경로가 레포에 들어가지 않게 paths.json은 gitignore 대상이다."""
+    f = HERE / "paths.json"
+    c = json.loads(f.read_text()) if f.exists() else {}
+    home = pathlib.Path.home()
+    roots = [pathlib.Path(p).expanduser() for p in c.get("materials", [])] or [home / "USMLE_Materials"]
+    topics = pathlib.Path(c.get("topics", home / "USMLE_Notes/Topics")).expanduser()
+    anki = c.get("anki")
+    if anki:
+        anki = pathlib.Path(anki).expanduser()
+    else:  # Anki 프로필명은 사람마다 다르다. 가장 큰 컬렉션을 고른다.
+        cands = sorted((home / "Library/Application Support/Anki2").glob("*/collection.anki2"),
+                       key=lambda p: p.stat().st_size, reverse=True)
+        anki = cands[0] if cands else home / "Library/Application Support/Anki2/User 1/collection.anki2"
+    return roots, topics, anki, c.get("tag", "ReviewNeeded")
+
+
+ROOTS, TOPICS, ANKI, TAG = _conf()
+INDEX = HERE / "materials.db"
+SNAP = HERE / "anki_snapshot.anki2"  # Anki 켜져 있을 때 읽을 사본
 LIMIT = 12
 
 
@@ -34,7 +52,7 @@ def db():
     return c
 
 
-OCR_BIN = pathlib.Path(__file__).parent / "ocr"
+OCR_BIN = HERE / "ocr"
 EXTS = (".pdf", ".md", ".txt", ".png")
 
 
@@ -179,8 +197,6 @@ def anki(where, args, label):
             print(f"    출처태그: {' '.join(src[:4])}")
 
 
-TOPICS = pathlib.Path.home() / "Documents/Sync_Vault/40_Study/CBBSA Study/Topics"
-TAG = "ReviewNeeded"  # Anki에 붙이는 태그. 이게 고정 쿼리가 된다. 오답 + 다시 볼 것 둘 다.
 AC = "http://127.0.0.1:8765"
 
 

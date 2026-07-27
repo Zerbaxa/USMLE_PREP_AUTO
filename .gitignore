@@ -15,3 +15,6 @@ __pycache__/
 # macOS
 .DS_Store
 adjust_anki.py
+
+# 개인 경로 설정
+paths.json
