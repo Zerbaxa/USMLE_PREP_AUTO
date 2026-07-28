@@ -26,10 +26,19 @@ UWorld 해설 한 장 → **그 주제에 대한 내 모든 자료를 한 노트
 
 ### 2. 이미 있는지 확인
 ```bash
-find "<CBBSA Study>" -name "*<주제>*.md"        # 이미 있나
-find ~/Documents/Sync_Vault -name "<주제>.md"    # vault 전체에서 이름이 유일한가
+find "<CBBSA Study>" -name "*<주제>*.md"                 # ① 같은 이름의 노트가 있나
+grep -ril "<주제>" "<CBBSA Study>" --include="*.md"      # ② 다른 노트·MOC 본문에 이미 있나
+find ~/Documents/Sync_Vault -name "<주제>.md"             # ③ vault 전체에서 이름이 유일한가
 ```
 같은 주제 노트가 있으면 **새로 만들지 말고 그 노트를 보강**한다 (기존 줄은 안 고침, 새 내용만 추가).
+
+**②를 빼먹지 마라.** 이름만 보면 놓친다 — 아직 독립 노트가 아니고 **과목 MOC나 다른 노트 안에 섹션으로 들어있는** 주제가 있다.
+그걸 모르고 새 노트를 만들면 **같은 주제가 두 군데로 갈라진다.** 실제로 그렇게 된 적이 있다
+(`Cardiology.md`의 `### Antiarrhythmics`가 있는데 `Class I antiarrhythmics.md`가 따로 생김).
+
+②에 걸리면 둘 중 하나를 고른다:
+- 그 섹션이 **본격적인 주제**다 → 섹션을 잘라내 독립 노트로 승격하고, 원래 자리엔 `[[링크]]`만 남긴다
+- 그 섹션이 **부분·각주**다 → 새 노트를 만들되 **서로 `[[링크]]`로 잇는다**
 
 **파일명은 vault 453개 노트 전체에서 유일해야 한다** — Obsidian이 경로 없는 `[[파일명]]`으로 링크를 풀기 때문.
 애매한 약어는 풀어쓴다 (`PCP`는 Pneumocystis도 되고 phencyclidine도 된다 → `Pneumocystis pneumonia`).
