@@ -9,8 +9,8 @@ UWorld 해설 한 장 → **그 주제에 대한 내 모든 자료를 한 노트
 해설 내용 + 내 PDF 자료 + Anki 카드, **전부 출처를 달아서** 원문을 되찾을 수 있게.
 
 - vault: `paths.json`의 `topics` 상위 폴더 (과목 노트가 있는 곳)
-- 주제 노트: `Topics/<주제명>.md` ← 결과물
-- 과목 노트: `*.md` ← 여기엔 `[[링크]]` 한 줄만 추가
+- 주제 노트: `<과목>/<주제명>.md` ← 결과물 (과목 폴더 안)
+- 과목 MOC: `<과목>.md` ← `## 주제 노트` 아래에 `[[링크]]` 한 줄만 추가
 - 복습 큐: `USMLE_Review.md`
 - 검색 도구: `mle.py` — 경로는 아래 `$M` 참고. 자료·노트 폴더는 `paths.json`이 정한다
 
@@ -25,10 +25,14 @@ UWorld 해설 한 장 → **그 주제에 대한 내 모든 자료를 한 노트
 흐리거나 잘려서 확신이 안 서면 **추측하지 말고 묻는다.**
 
 ### 2. 이미 있는지 확인
-```
-ls "<Topics 폴더>"
+```bash
+find "<CBBSA Study>" -name "*<주제>*.md"        # 이미 있나
+find ~/Documents/Sync_Vault -name "<주제>.md"    # vault 전체에서 이름이 유일한가
 ```
 같은 주제 노트가 있으면 **새로 만들지 말고 그 노트를 보강**한다 (기존 줄은 안 고침, 새 내용만 추가).
+
+**파일명은 vault 453개 노트 전체에서 유일해야 한다** — Obsidian이 경로 없는 `[[파일명]]`으로 링크를 풀기 때문.
+애매한 약어는 풀어쓴다 (`PCP`는 Pneumocystis도 되고 phencyclidine도 된다 → `Pneumocystis pneumonia`).
 
 ### 3. 검색 — 내 자료와 Anki 둘 다
 
@@ -66,10 +70,14 @@ $M tag "Aortic_Stenosis"              # Anki 태그로 훑기
 검색어는 해설의 핵심 용어로. 한 번에 안 걸리면 동의어·약어로 2~3번 더 (예: `HCM` / `hypertrophic cardiomyopathy`).
 **아무것도 안 나온 소스는 "없었다"고 노트에 적는다.** 조용히 빼지 않는다.
 
-### 4. 노트 작성 — `Topics/<주제>.md`
+### 4. 노트 작성 — `<과목>/<주제>.md`
 한국어 설명 + 의학용어는 영어. 기존 노트 스타일(`###` + 중첩 불릿, 비교는 표) 유지.
 
 ```markdown
+---
+tags: [system/cardio, study/path]
+created: 2026-07-28
+---
 # Aortic stenosis
 
 > 출처: UWorld 오답 2026-07-27, QID 1234 · 자료 3 · Anki 5
@@ -98,8 +106,8 @@ $M tag "Aortic_Stenosis"              # Anki 태그로 훑기
 - `[AK]` Anki `nid:1471558760048` · AnKing Step Deck
 - `[HY]` USMLE high-yield 일반지식 (자료 출처 없음)
 
-## 관련
-[[Hypertrophic cardiomyopathy]] · [[Cardiology]]
+## 🔗 관련 노트
+- [[Cardiology]] · [[Hypertrophic cardiomyopathy]]
 
 ## Anki로 돌리기
 `nid:1471558760048,1471554803766` — 이 카드들에 `ReviewNeeded` 태그 붙이기
@@ -124,7 +132,8 @@ $M mark wide       # 주제 전체로 넓힐 때
 페이지 원문 안에 찍혀 있으니 그대로 읽어서 `FA2026.pdf p.347 (책 p.325)`처럼 둘 다 적는다.
 
 ### 5. 연결
-- 과목 노트(`Cardiology.md` 등) 끝에 `- [[Aortic stenosis]]` 한 줄. 과목이 애매하면 묻는다.
+- 과목 MOC(`Cardiology.md` 등)의 **`## 주제 노트` 아래**에 `- [[Aortic stenosis]] — <한 줄 설명>`.
+  파일 끝에 붙이지 않는다 (`## 🔗 관련 노트` 뒤로 밀리면 안 됨). 과목이 애매하면 묻는다.
 - 관련 주제 노트가 이미 있으면 서로 `[[링크]]`.
 
 ### 6. 복습 큐
@@ -141,7 +150,7 @@ $M mark wide       # 주제 전체로 넓힐 때
 
 ### 7. 인용 검사 — 빼먹지 말 것
 ```bash
-$M check "…/Topics/<주제>.md"
+$M check "…/<과목>/<주제>.md"
 ```
 `✗ 출처에 정의 없음`이 뜨면 고친 뒤에 보고한다. 좌표 없는 인용은 이 프로젝트의 존재 이유를 깬다.
 
@@ -159,6 +168,15 @@ $M check "…/Topics/<주제>.md"
   (Obsidian이 네이티브로 렌더링한다). 그림이 그 문제의 뼈대인 경우가 많다 — 빼먹으면 노트가 반쪽이 된다.
 - **노트에 쓸 때 `printf`/`echo`를 쓰지 마라.** 본문에 `%`가 있으면 줄이 잘린다(실제로 겪음).
   Write/Edit 툴로 쓴다. 기존 파일에 덧붙일 때는 파일 끝 개행 여부를 먼저 확인한다.
+
+## 태그 (frontmatter, 최대 2개)
+
+- **`system/*`** (0~1개) — `cardio` `pulm` `renal` `gi` `heme` `endo` `neuro` `psych` `msk` `repro` `derm`
+  장기와 무관한 주제(생화학·유전·통계·윤리)는 **안 단다.**
+- **`study/*`** (반드시 1개) — `path` `pharm` `physio` `micro` `anat` `biochem` `genetics` `embryo` `behavioral` `biostat`
+
+**폴더는 "어디에 정리했나", 태그는 "무엇을 다루나"** — 둘이 갈리는 게 요점이다.
+예: `Coagulase-negative staphylococci`는 `Infection/` 폴더에 있지만 `system/cardio` (심내막염이라 심장 공부할 때 걸려야 한다).
 
 ## 자료 폴더
 

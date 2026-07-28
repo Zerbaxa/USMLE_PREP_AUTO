@@ -216,7 +216,8 @@ def anki_connect(action, **params):
 
 def collect(topic=""):
     """오답 노트들에서 (인용 nid, 주제 태그) 를 긁는다."""
-    files = sorted(TOPICS.glob(f"*{topic}*.md")) if topic else sorted(TOPICS.glob("*.md"))
+    # rglob: 주제 노트가 과목 폴더 안에 있다. 루트의 MOC도 걸리지만 nid/AK 태그가 없어 무해.
+    files = sorted(TOPICS.rglob(f"*{topic}*.md")) if topic else sorted(TOPICS.rglob("*.md"))
     nids, tags = set(), set()
     for f in files:
         t = f.read_text()
