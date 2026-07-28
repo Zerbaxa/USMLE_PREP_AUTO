@@ -326,14 +326,26 @@ def check(path):
             for r in re.findall(r"\[([^\]]+)\]", run)}
     defined = set(re.findall(r"`\[([^\]]+)\]`", src))
     dangling, unused = sorted(used - defined), sorted(defined - used)
-    print(f"{pathlib.Path(path).name}: 인용 {len(used)}종 / 출처 {len(defined)}종")
+    # nid는 실제로 Anki에 있어야 한다. 자리표시자(`nid:1471554...`)를 적어놓는 사고를 잡는다.
+    nids = set(re.findall(r"nid:(\d+)", body + src))
+    ghosts = []
+    if nids:
+        try:
+            live = {str(r[0]) for r in anki_db().execute(
+                f"select id from notes where id in ({','.join(nids)})")}
+            ghosts = sorted(nids - live)
+        except sqlite3.Error:
+            pass  # Anki를 못 읽으면 이 검사만 건너뛴다
+    print(f"{pathlib.Path(path).name}: 인용 {len(used)}종 / 출처 {len(defined)}종 / nid {len(nids)}개")
     for d in dangling:
         print(f"  ✗ `^[{d}]` — 출처에 정의 없음")
+    for g in ghosts:
+        print(f"  ✗ `nid:{g}` — Anki에 없는 카드")
     for u in unused:
         print(f"  · `[{u}]` — 출처에만 있고 본문에서 안 씀")
-    if not dangling:
+    if not dangling and not ghosts:
         print("  ✓ 모든 인용에 좌표 있음")
-    return not dangling
+    return not dangling and not ghosts
 
 
 def main():
