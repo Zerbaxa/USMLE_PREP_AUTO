@@ -236,7 +236,12 @@ def mark(arg=""):
     try:
         anki_connect("version")
     except Exception as e:
-        return print(f"AnkiConnect 연결 안 됨 ({e})\n  → Anki를 껐다 켜면 붙는다. 그전엔 `mle.py deck`으로 수동.")
+        # 사용자는 Anki를 늘 켜두지 않는다. 실패를 눈에 띄게 내고, 놓쳐도 회수된다는 걸 알린다.
+        return print(f"⚠ Anki 태그 못 붙임 — AnkiConnect 연결 안 됨 ({e})\n"
+                     f"  대기 중인 인용 카드 {len(nids)}장.\n"
+                     f"  → Anki를 켜고 `mle.py mark`를 한 번만 다시 돌리면 된다. "
+                     f"노트 전체를 다시 훑으므로 이번 회차뿐 아니라 **밀린 것까지 전부** 붙는다.\n"
+                     f"  → 지금 손으로 붙이려면 `mle.py deck`.")
     if wide:
         target = set()
         for t in tags:
