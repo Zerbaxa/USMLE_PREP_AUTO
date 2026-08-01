@@ -142,7 +142,23 @@ def search_materials(q):
     print(f"\n## 내 자료 ({len(rows)})")
     for path, page, snip in rows:
         print(f"- `{pathlib.Path(path).name}` p.{page} — {' '.join(snip.split())}")
+    coverage(expr)
     return rows
+
+
+def coverage(expr):
+    """교재별 히트 수. 상위 LIMIT개 랭킹에 밀려 **책 한 권이 통째로 안 보이는** 사고를 막는다
+    (Pathoma에 16쪽이나 있는데 히트 목록에 하나도 안 떠서 노트에서 통째로 빠진 적이 있다).
+    스크린샷은 수백 개라 노이즈이므로 PDF만 센다."""
+    hits = {}
+    for p, in db().execute("select path from pages where pages match ?", (expr,)):
+        if p.lower().endswith(".pdf"):
+            hits[pathlib.Path(p).name] = hits.get(pathlib.Path(p).name, 0) + 1
+    if not hits:
+        return
+    print("\n## 교재별 히트 (랭킹과 무관 — 여기 있는데 위에 없으면 `page`로 직접 열 것)")
+    for name, n in sorted(hits.items(), key=lambda kv: -kv[1])[:10]:
+        print(f"  {n:>4}쪽  {name}")
 
 
 def page(pat, rng):
@@ -375,6 +391,8 @@ def fig(args):
     size = subprocess.run(["sips", "-g", "pixelWidth", "-g", "pixelHeight", str(img)],
                           capture_output=True, text=True).stdout.split()
     wh = f"{size[-3]}x{size[-1]}" if len(size) >= 4 else "?"
+    if crop and wh != f"{w}x{h}":  # sips는 범위를 벗어난 crop을 조용히 무시한다
+        print(f"⚠ crop 요청 {w}x{h} → 실제 {wh}. 좌표가 원본 범위를 벗어났다")
     if not name:
         return print(f"{img}  ({wh})\n  ← Read로 열어보고 crop 좌표(x,y,w,h)와 이름을 정해 다시 호출")
     dest = _vault() / "Assets/Images" / f"{name}.png"
