@@ -7,6 +7,7 @@ materials.db-*
 anki_snapshot.anki2*
 
 # 빌드 산출물
+.fig/
 ocr
 *.o
 __pycache__/

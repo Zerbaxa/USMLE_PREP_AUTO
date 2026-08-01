@@ -7,6 +7,7 @@
   ./mle.py brief "aortic stenosis"      ★ 로컬 전부 한 방에 (히트+원문+Anki)
   ./mle.py search "aortic stenosis"     히트 목록만
   ./mle.py page Biochemistry 720-724    인덱스에 있는 원문 그대로
+  ./mle.py fig FA2026 347 [x,y,w,h 이름]  ★ 원본 그림을 오려 vault Assets/Images에
   ./mle.py tag firstaid                 Anki 태그 훑기
 """
 import html
@@ -317,6 +318,66 @@ def qid(n, full=False):
     anki("tags like ?", [f"%::{n} %"], f"QID {n} 카드 (내용 대조 필수)")
 
 
+def _vault():
+    """Obsidian vault 루트 = topics에서 위로 올라가며 `.obsidian`이 있는 곳."""
+    for p in [TOPICS, *TOPICS.parents]:
+        if (p / ".obsidian").is_dir():
+            return p
+    return TOPICS
+
+
+def fig(args):
+    """해설의 그림을 그대로 오려 vault에 넣는다. 새로 그리는 것보다 정확하다.
+
+      fig "FA2026" 347                      페이지 전체를 임시 png로 뽑는다 → Read로 열어보고 좌표를 정한다
+      fig "FA2026" 347 120,300,900,600 FA-p347_Murmurs    그 영역만 잘라 Assets/Images/에 저장
+      fig ~/Desktop/shot.png 0,80,1200,700 UW_1234_AS     스크린샷도 같은 방식(페이지 번호 없음)
+
+    좌표는 렌더된 png 기준 x,y,w,h. 이름을 안 주면 임시 파일 경로만 찍고 끝난다.
+    ⚠ 이름이 곧 vault 전체에서의 이름이다 — 출처가 보이게 (`UW_<QID>_…` / `FA-p<쪽>_…`)."""
+    page_no = crop = name = ""
+    src, *rest = args
+    for a in rest:
+        if a.isdigit():
+            page_no = a
+        elif "," in a:
+            crop = a
+        else:
+            name = a
+    p = pathlib.Path(src).expanduser()
+    if p.is_file() and p.suffix.lower() != ".pdf":
+        img = p
+    else:
+        if not p.is_file():  # 파일명 일부만 줘도 인덱스에서 찾는다
+            hit = db().execute("select path from pages where path like ? limit 1",
+                               (f"%{src}%",)).fetchone()
+            if not hit:
+                return print(f"'{src}' — 인덱스에 없는 파일")
+            p = pathlib.Path(hit[0])
+        if not page_no:
+            return print("PDF는 페이지 번호가 필요하다")
+        img = HERE / ".fig" / f"{p.stem}_p{page_no}.png"
+        img.parent.mkdir(exist_ok=True)
+        subprocess.run(["pdftoppm", "-r", "150", "-f", page_no, "-l", page_no, "-png",
+                        "-singlefile", str(p), str(img.with_suffix(""))], check=True)
+    if crop:
+        x, y, w, h = (int(v) for v in crop.split(","))
+        out = HERE / ".fig" / f"{img.stem}_crop.png"  # 원본 옆에 두면 vault가 지저분해진다
+        out.parent.mkdir(exist_ok=True)
+        subprocess.run(["sips", "-c", str(h), str(w), "--cropOffset", str(y), str(x),
+                        str(img), "--out", str(out)], capture_output=True, check=True)
+        img = out
+    size = subprocess.run(["sips", "-g", "pixelWidth", "-g", "pixelHeight", str(img)],
+                          capture_output=True, text=True).stdout.split()
+    wh = f"{size[-3]}x{size[-1]}" if len(size) >= 4 else "?"
+    if not name:
+        return print(f"{img}  ({wh})\n  ← Read로 열어보고 crop 좌표(x,y,w,h)와 이름을 정해 다시 호출")
+    dest = _vault() / "Assets/Images" / f"{name}.png"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(img, dest)
+    print(f"{dest}  ({wh})\n노트에 붙일 줄:  ![[{name}.png]]")
+
+
 def check(path):
     """노트의 ^[약칭]이 전부 ## 출처에 정의돼 있는지. 좌표 없는 인용 = 되찾을 수 없는 인용."""
     body, _, src = pathlib.Path(path).read_text().partition("## 출처")
@@ -371,6 +432,8 @@ def main():
         check(q)
     elif cmd == "page" and len(sys.argv) > 3:
         page(sys.argv[2], sys.argv[3])
+    elif cmd == "fig" and q:
+        fig(sys.argv[2:])
     elif cmd == "tag" and q:
         anki("tags like ?", [f"%{q}%"], f"태그 '{q}'")
     elif cmd == "selftest":
